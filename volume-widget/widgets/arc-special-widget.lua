@@ -1,4 +1,5 @@
 local wibox = require("wibox")
+local gears = require("gears")
 local beautiful = require('beautiful')
 
 local ICON_DIR = os.getenv("HOME") .. '/.config/awesome/awesome-wm-widgets/volume-widget/icons/'
@@ -34,28 +35,47 @@ function widget.get_widget(widgets_args)
 
     return wibox.widget {
         {
-            id = "icon",
-            image = ICON_DIR .. 'audio-volume-high-symbolic.svg',
-            resize = true,
-            widget = wibox.widget.imagebox,
+            {
+                id = "icon",
+                image = ICON_DIR .. 'audio-volume-high-symbolic.svg',
+                resize = true,
+                widget = wibox.widget.imagebox,
+            },
+            id = 'arc',
+            max_value = 100,
+            thickness = thickness,
+            start_angle = 4.71238898, -- 2pi*3/4
+            forced_height = size,
+            forced_width = size,
+            paddings = 2,
+            widget = wibox.container.arcchart,
         },
-        max_value = 100,
-        thickness = thickness,
-        start_angle = 4.71238898, -- 2pi*3/4
-        forced_height = size,
-        forced_width = size,
-        bg = bg_color,
-        paddings = 2,
-        widget = wibox.container.arcchart,
+        {
+            id = 'bar',
+            max_value = 100,
+            forced_width = 100,
+            color = beautiful.fg_normal,
+            margins = { top = 0, bottom = 0 },
+            background_color =  '#ffffff11',
+            shape = gears.shape.rounded_bar,
+            widget = wibox.widget.progressbar,
+            visible = false,
+        },
+        spacing = 4,
+        layout = wibox.layout.fixed.horizontal,
         set_volume_level = function(self, new_value)
-            self.value = new_value
+            self:get_children_by_id('arc')[1]:set_value(new_value)
+            self:get_children_by_id('bar')[1]:set_value(tonumber(new_value))
+            show_hide_widget(self:get_children_by_id('bar')[1])
         end,
         mute = function(self)
             self.colors = { mute_color }
+            self:get_children_by_id('bar')[1]:set_color(beautiful.bg_normal)
             self:get_children_by_id('icon')[1]:set_image(ICON_DIR .. 'audio-volume-muted-symbolic.svg')
         end,
         unmute = function(self)
             self.colors = { main_color }
+            self:get_children_by_id('bar')[1]:set_color(beautiful.fg_normal)
             self:get_children_by_id('icon')[1]:set_image(ICON_DIR .. 'audio-volume-high-symbolic.svg')
         end
     }

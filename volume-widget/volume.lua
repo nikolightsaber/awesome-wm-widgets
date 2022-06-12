@@ -27,6 +27,7 @@ local widget_types = {
     icon_and_text = require("awesome-wm-widgets.volume-widget.widgets.icon-and-text-widget"),
     icon = require("awesome-wm-widgets.volume-widget.widgets.icon-widget"),
     arc = require("awesome-wm-widgets.volume-widget.widgets.arc-widget"),
+    arc_special = require("awesome-wm-widgets.volume-widget.widgets.arc-special-widget"),
     horizontal_bar = require("awesome-wm-widgets.volume-widget.widgets.horizontal-bar-widget"),
     vertical_bar = require("awesome-wm-widgets.volume-widget.widgets.vertical-bar-widget")
 }
@@ -165,12 +166,13 @@ local function worker(user_args)
 
     local mixer_cmd = args.mixer_cmd or 'pavucontrol'
     local widget_type = args.widget_type
-    local refresh_rate = args.refresh_rate or 1
+    local refresh_rate = args.refresh_rate or 100
     local step = args.step or 5
     local device = args.device or 'pulse'
 
     local margin_left = args.margin_left or 0
     local margin_right = args.margin_right or 0
+    local current_level = 0
 
     if widget_types[widget_type] == nil then
         volume.widget = widget_types['icon_and_text'].get_widget(args.icon_and_text_args)
@@ -185,7 +187,10 @@ local function worker(user_args)
         end
         local volume_level = string.match(stdout, "(%d?%d?%d)%%") -- (\d?\d?\d)\%)
         volume_level = string.format("% 3d", volume_level)
-        widget:set_volume_level(volume_level)
+        if current_level ~= volume_level then
+          widget:set_volume_level(volume_level)
+          current_level = volume_level
+        end
     end
 
     function volume:inc(s)
@@ -208,7 +213,7 @@ local function worker(user_args)
 
     volume.widget:buttons(
             awful.util.table.join(
-                    awful.button({}, 3, function()
+                    awful.button({}, 1, function()
                         if popup.visible then
                             popup.visible = not popup.visible
                         else
@@ -218,8 +223,8 @@ local function worker(user_args)
                     end),
                     awful.button({}, 4, function() volume:inc() end),
                     awful.button({}, 5, function() volume:dec() end),
-                    awful.button({}, 2, function() volume:mixer() end),
-                    awful.button({}, 1, function() volume:toggle() end)
+                    awful.button({}, 3, function() volume:mixer() end),
+                    awful.button({}, 2, function() volume:toggle() end)
             )
     )
 
