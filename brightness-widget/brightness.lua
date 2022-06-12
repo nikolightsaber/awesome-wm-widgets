@@ -14,6 +14,7 @@ local watch = require("awful.widget.watch")
 local spawn = require("awful.spawn")
 local naughty = require("naughty")
 local beautiful = require("beautiful")
+local gears = require("gears")
 
 local ICON_DIR = os.getenv("HOME") .. '/.config/awesome/awesome-wm-widgets/brightness-widget/'
 local get_brightness_cmd
@@ -28,6 +29,24 @@ local function show_warning(message)
         preset = naughty.config.presets.critical,
         title = 'Brightness Widget',
         text = message}
+end
+
+local hide_bar = timer({ timeout = 4 })
+
+local function show_hide_widget(widget)
+  if (widget.visible) then
+    hide_bar:restart();
+    return;
+  end
+
+  widget.visible = true
+
+  hide_bar:connect_signal("timeout", function ()
+     widget.visible = false
+     hide_bar:stop()
+  end)
+
+  hide_bar:start()
 end
 
 local function worker(user_args)
@@ -97,23 +116,38 @@ local function worker(user_args)
     elseif type == 'arc' then
         brightness_widget.widget = wibox.widget {
             {
+                id = 'arc',
                 {
                     image = path_to_icon,
                     resize = true,
                     widget = wibox.widget.imagebox,
                 },
                 valign = 'center',
-                layout = wibox.container.place
+                max_value = 100,
+                thickness = 2,
+                start_angle = 4.71238898, -- 2pi*3/4
+                forced_height = 18,
+                forced_width = 18,
+                paddings = 2,
+                widget = wibox.container.arcchart,
             },
-            max_value = 100,
-            thickness = 2,
-            start_angle = 4.71238898, -- 2pi*3/4
-            forced_height = 18,
-            forced_width = 18,
-            paddings = 2,
-            widget = wibox.container.arcchart,
+            {
+                id = 'bar',
+                max_value = 100,
+                forced_width = 100,
+                color = beautiful.fg_normal,
+                margins = { top = 0, bottom = 0 },
+                background_color =  '#ffffff11',
+                shape = gears.shape.rounded_bar,
+                widget = wibox.widget.progressbar,
+                visible = false,
+            },
+            spacing = 4,
+            layout = wibox.layout.fixed.horizontal,
             set_value = function(self, level)
-                self:set_value(level)
+                self:get_children_by_id('arc')[1]:set_value(level)
+                self:get_children_by_id('bar')[1]:set_value(level)
+                show_hide_widget(self:get_children_by_id('bar')[1])
             end
         }
     else
@@ -124,8 +158,10 @@ local function worker(user_args)
 
     local update_widget = function(widget, stdout, _, _, _)
         local brightness_level = tonumber(string.format("%.0f", stdout))
-        current_level = brightness_level
-        widget:set_value(brightness_level)
+        if current_level ~= brightness_level then
+          current_level = brightness_level
+          widget:set_value(brightness_level)
+        end
     end
 
     function brightness_widget:set(value)
