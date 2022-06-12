@@ -34,9 +34,11 @@ function widget.get_widget(widgets_args)
         end,
         mute = function(self)
             self.colors = { mute_color }
+            self:get_children_by_id('icon')[1]:set_image(ICON_DIR .. 'audio-volume-muted-symbolic.svg')
         end,
         unmute = function(self)
             self.colors = { main_color }
+            self:get_children_by_id('icon')[1]:set_image(ICON_DIR .. 'audio-volume-high-symbolic.svg')
         end
     }
 
