@@ -65,6 +65,9 @@ local function worker(user_args)
         return
     end
 
+    local margin_left = args.margin_left or 0
+    local margin_right = args.margin_right or 0
+
     if type == 'icon_and_text' then
         brightness_widget.widget = wibox.widget {
             {
@@ -184,7 +187,7 @@ local function worker(user_args)
         }
     end
 
-    return brightness_widget.widget
+    return wibox.container.margin(brightness_widget.widget, margin_left, margin_right)
 end
 
 return setmetatable(brightness_widget, { __call = function(_, ...)

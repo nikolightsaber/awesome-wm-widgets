@@ -169,6 +169,9 @@ local function worker(user_args)
     local step = args.step or 5
     local device = args.device or 'pulse'
 
+    local margin_left = args.margin_left or 0
+    local margin_right = args.margin_right or 0
+
     if widget_types[widget_type] == nil then
         volume.widget = widget_types['icon_and_text'].get_widget(args.icon_and_text_args)
     else
@@ -222,7 +225,7 @@ local function worker(user_args)
 
     watch(GET_VOLUME_CMD(device), refresh_rate, update_graphic, volume.widget)
 
-    return volume.widget
+    return wibox.container.margin(volume.widget, margin_left, margin_right)
 end
 
 return setmetatable(volume, { __call = function(_, ...) return worker(...) end })
