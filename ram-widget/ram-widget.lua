@@ -17,6 +17,8 @@ local function worker(user_args)
     local widget_show_buf = args.widget_show_buf or false
     local widget_height = args.widget_height or 25
     local widget_width = args.widget_width or 25
+    local margin_left = user_args.margin_left or 0
+    local margin_right = user_args.margin_right or 0
 
     --- Main ram widget shown on wibar
     ramgraph_widget = wibox.widget {
@@ -99,7 +101,7 @@ local function worker(user_args)
         )
     )
 
-    return ramgraph_widget
+    return wibox.container.margin(ramgraph_widget, margin_left, margin_right)
 end
 
 
