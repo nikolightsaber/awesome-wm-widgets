@@ -59,6 +59,10 @@ local function worker(user_args)
     local timeout = args.timeout or 1
     local width = args.width or 55
 
+    local margin_left = args.margin_left or 0
+    local margin_right = args.margin_right or 0
+
+
     net_speed_widget = wibox.widget {
         {
             id = 'rx_speed',
@@ -119,7 +123,7 @@ local function worker(user_args)
     watch(string.format([[bash -c "cat /sys/class/net/%s/statistics/*_bytes"]], interface),
         timeout, update_widget, net_speed_widget)
 
-    return net_speed_widget
+    return wibox.container.margin(net_speed_widget, margin_left, margin_right)
 
 end
 
