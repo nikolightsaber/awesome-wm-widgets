@@ -96,6 +96,9 @@ local function worker(user_args)
 
     local args = user_args or {}
 
+    local margin_left = args.margin_left or 0
+    local margin_right = args.margin_right or 0
+
     local width = args.width or 50
     local step_width = args.step_width or 2
     local step_spacing = args.step_spacing or 1
@@ -331,7 +334,7 @@ local function worker(user_args)
         end)
     end)
 
-    return cpu_widget
+    return wibox.container.margin(cpu_widget, margin_left, margin_right)
 end
 
 return setmetatable(cpu_widget, { __call = function(_, ...)
