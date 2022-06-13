@@ -46,6 +46,8 @@ local popup = awful.popup {
 
 local function worker(user_args)
     local rows = { layout = wibox.layout.fixed.vertical }
+    local margin_left = user_args.margin_left or 0
+    local margin_right = user_args.margin_right or 0
 
     local args = user_args or {}
 
@@ -129,7 +131,7 @@ local function worker(user_args)
             )
     )
 
-    return logout_menu_widget
+    return wibox.container.margin(logout_menu_widget, margin_left, margin_right)
 
 end
 
