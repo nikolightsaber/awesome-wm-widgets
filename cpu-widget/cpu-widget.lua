@@ -108,14 +108,21 @@ local function worker(user_args)
     local process_info_max_length = args.process_info_max_length or -1
     local timeout = args.timeout or 1
 
+    -- local cpugraph_widget = wibox.widget {
+    --     max_value = 100,
+    --     background_color = background_color,
+    --     forced_width = width,
+    --     step_width = step_width,
+    --     step_spacing = step_spacing,
+    --     widget = wibox.widget.graph,
+    --     color = "linear:0,0:0,20:0,#FF0000:0.3,#FFFF00:0.6," .. color
+    -- }
+
     local cpugraph_widget = wibox.widget {
         max_value = 100,
-        background_color = background_color,
-        forced_width = width,
+        widget = wibox.widget.textbox,
         step_width = step_width,
         step_spacing = step_spacing,
-        widget = wibox.widget.graph,
-        color = "linear:0,0:0,20:0,#FF0000:0.3,#FFFF00:0.6," .. color
     }
 
     -- This timer periodically executes the heavy command while the popup is open.
@@ -123,7 +130,7 @@ local function worker(user_args)
     -- This greatly improves performance while the popup is closed at the small cost
     -- of a slightly longer popup opening time.
     local popup_timer = gears.timer {
-        timeout = timeout
+        timeout = 1
     }
 
     local popup = awful.popup{
@@ -163,7 +170,7 @@ local function worker(user_args)
     cpu_widget = wibox.widget {
         {
             cpugraph_widget,
-            reflection = {horizontal = true},
+            -- reflection = {horizontal = true},
             layout = wibox.container.mirror
         },
         bottom = 2,
@@ -188,7 +195,7 @@ local function worker(user_args)
         maincpu['total_prev'] = total
         maincpu['idle_prev'] = idle
 
-        widget:add_value(diff_usage)
+        widget:set_text(string.format('CPU:%d%%', math.floor(diff_usage)))
     end,
     cpugraph_widget
     )
