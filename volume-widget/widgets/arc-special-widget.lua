@@ -7,11 +7,6 @@ local ICON_DIR = os.getenv("HOME") .. '/.config/awesome/awesome-wm-widgets/volum
 local hide_bar = timer({ timeout = 4 })
 
 local function show_hide_widget(widget)
-  if (widget.visible) then
-    hide_bar:restart();
-    return;
-  end
-
   widget.visible = true
 
   hide_bar:connect_signal("timeout", function ()
