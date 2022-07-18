@@ -154,7 +154,7 @@ local function worker(user_args)
         charge = charge / capacity
 
         if show_current_level then
-            level_widget.text = string.format('%d%%', charge)
+            level_widget.text = string.format('%d%%', math.floor(charge))
         end
 
         if (charge >= 1 and charge < 15) then
