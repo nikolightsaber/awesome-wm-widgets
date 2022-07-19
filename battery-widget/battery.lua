@@ -126,7 +126,7 @@ local function worker(user_args)
         local capacities = {}
         for s in stdout:gmatch("[^\r\n]+") do
             local status, charge_str, _ = string.match(s, '.+: ([%a%s]+), (%d?%d?%d)%%,?(.*)')
-            if status ~= nil then
+            if status ~= nil  and tonumber(charge_str) ~= 0 then
                 table.insert(battery_info, {status = status, charge = tonumber(charge_str)})
             else
                 local cap_str = string.match(s, '.+:.+last full capacity (%d+)')
@@ -140,12 +140,11 @@ local function worker(user_args)
         end
 
         local charge = 0
-        local status
+        local status = "Not Charging"
         for i, batt in ipairs(battery_info) do
             if capacities[i] ~= nil then
-                if batt.charge >= charge then
-                    status = batt.status -- use most charged battery status
-                    -- this is arbitrary, and maybe another metric should be used
+                if batt.status == "Charging" then
+                    status = batt.status  -- if one battery is charging we are charging
                 end
 
                 charge = charge + batt.charge * capacities[i]
