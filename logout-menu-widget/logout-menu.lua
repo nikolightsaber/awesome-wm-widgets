@@ -135,4 +135,4 @@ local function worker(user_args)
 
 end
 
-return setmetatable(logout_menu_widget, { __call = function(_, ...) return worker(...) end })
+return worker
