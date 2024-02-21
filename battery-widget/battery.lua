@@ -125,13 +125,17 @@ local function worker(user_args)
         local battery_info = {}
         local capacities = {}
         for s in stdout:gmatch("[^\r\n]+") do
+            if string.find(s, "information unavailable") then
+              goto continue
+            end
             local status, charge_str, _ = string.match(s, '.+: ([%a%s]+), (%d?%d?%d)%%,?(.*)')
-            if status ~= nil  and tonumber(charge_str) ~= 0 then
+            if status ~= nil then
                 table.insert(battery_info, {status = status, charge = tonumber(charge_str)})
             else
                 local cap_str = string.match(s, '.+:.+last full capacity (%d+)')
                 table.insert(capacities, tonumber(cap_str))
             end
+          ::continue::
         end
 
         local capacity = 0
