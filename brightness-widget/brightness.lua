@@ -60,6 +60,7 @@ local function worker(user_args)
     local current_level = 0 -- current brightness value
     local tooltip = args.tooltip or false
     local percentage = args.percentage or false
+    local rmb_set_max = args.rmb_set_max or false
     if program == 'light' then
         get_brightness_cmd = 'light -G'
         set_brightness_cmd = 'light -S %d' -- <level>
@@ -71,7 +72,7 @@ local function worker(user_args)
         inc_brightness_cmd = 'xbacklight -inc ' .. step
         dec_brightness_cmd = 'xbacklight -dec ' .. step
     elseif program == 'brightnessctl' then
-        get_brightness_cmd = "brightnessctl get"
+        get_brightness_cmd = "sh -c 'brightnessctl -m | cut -d, -f4 | tr -d %'"
         set_brightness_cmd = "brightnessctl set %d%%" -- <level>
         inc_brightness_cmd = "brightnessctl set +" .. step .. "%"
         dec_brightness_cmd = "brightnessctl set " .. step .. "-%"
@@ -163,37 +164,41 @@ local function worker(user_args)
     function brightness_widget:set(value)
         current_level = value
         spawn.easy_async(string.format(set_brightness_cmd, value), function()
-            spawn.easy_async(get_brightness_cmd, function(out)
+            spawn.easy_async_with_shell(get_brightness_cmd, function(out)
                 update_widget(brightness_widget.widget, out)
             end)
         end)
     end
     local old_level = 0
     function brightness_widget:toggle()
-        if old_level < 0.1 then
-            -- avoid toggling between '0' and 'almost 0'
-            old_level = 1
-        end
-        if current_level < 0.1 then
-            -- restore previous level
-            current_level = old_level
+        if rmb_set_max then
+            brightness_widget:set(100)
         else
-            -- save current brightness for later
-            old_level = current_level
-            current_level = 0
+            if old_level < 0.1 then
+                -- avoid toggling between '0' and 'almost 0'
+                old_level = 1
+            end
+            if current_level < 0.1 then
+                -- restore previous level
+                current_level = old_level
+            else
+                -- save current brightness for later
+                old_level = current_level
+                current_level = 0
+            end
+            brightness_widget:set(current_level)
         end
-        brightness_widget:set(current_level)
     end
     function brightness_widget:inc()
         spawn.easy_async(inc_brightness_cmd, function()
-            spawn.easy_async(get_brightness_cmd, function(out)
+            spawn.easy_async_with_shell(get_brightness_cmd, function(out)
                 update_widget(brightness_widget.widget, out)
             end)
         end)
     end
     function brightness_widget:dec()
         spawn.easy_async(dec_brightness_cmd, function()
-            spawn.easy_async(get_brightness_cmd, function(out)
+            spawn.easy_async_with_shell(get_brightness_cmd, function(out)
                 update_widget(brightness_widget.widget, out)
             end)
         end)
